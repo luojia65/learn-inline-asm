@@ -19,6 +19,9 @@ no_highest_bit_in_byte:
 fn main() {
     let src = br#"12      ::: \\\\ ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456"#;
     let (w, s) = process(src); 
+    for i in 0..200_000_000 {
+        let (_w, _s) = process(src); 
+    }
     println!("{:064b}", w);
     println!("{:064b}", s);
     for b in src.iter().rev() {
@@ -32,26 +35,90 @@ fn process(src: &[u8]) -> (u64, u64) {
     let whitespace: u64;
     let structurals: u64;
     unsafe { asm!("
-        movdqu xmm0, [rdi] # xmm0 input
-        movdqa xmm1, [rip + low_nibble_mask] # xmm1 lo_msk
-        pshufb xmm1, xmm0 # xmm1 and_1
-        psrlq xmm0, 4 # xmm0 input >> 4
-        pand xmm0, [rip + no_highest_bit_in_byte]  # xmm0 hi_input
-        movdqa xmm2, [rip + high_nibble_mask] # xmm1 hi_msk
-        pshufb xmm2, xmm0 # xmm2 and_2
-        pand xmm1, xmm2 # xmm1 v_V0
-        pxor xmm0, xmm0 # xmm0 0
-        movdqa xmm2, [rip + structural_mask] # xmm2 struct_msk
-        pand xmm2, xmm1 # xmm2 cmpeq_in1
-        pcmpeqb xmm2, xmm0 # xmm2 struct
-        pmovmskb rdx, xmm2
-        movdqa xmm2, [rip + whitespace_mask] # xmm2 white_msk
-        pand xmm2, xmm1
-        pcmpeqb xmm2, xmm0
-        pmovmskb rax, xmm2
+        pxor xmm0, xmm0 
+
+        movdqu xmm1, [rdi]
+        movdqa xmm2, [rip + low_nibble_mask] 
+        pshufb xmm2, xmm1
+        psrlq xmm1, 4 
+        pand xmm1, [rip + no_highest_bit_in_byte] 
+        movdqa xmm3, [rip + high_nibble_mask] 
+        pshufb xmm3, xmm1
+        pand xmm2, xmm3 
+        movdqa xmm3, [rip + structural_mask] 
+        pand xmm3, xmm2 
+        pcmpeqb xmm3, xmm0
+        pmovmskb rdx, xmm3
+        movdqa xmm3, [rip + whitespace_mask]
+        pand xmm3, xmm2
+        pcmpeqb xmm3, xmm0
+        pmovmskb rax, xmm3
+        
+        movdqu xmm1, [rdi + 10h]
+        movdqa xmm2, [rip + low_nibble_mask] 
+        pshufb xmm2, xmm1
+        psrlq xmm1, 4 
+        pand xmm1, [rip + no_highest_bit_in_byte] 
+        movdqa xmm3, [rip + high_nibble_mask] 
+        pshufb xmm3, xmm1
+        pand xmm2, xmm3 
+        movdqa xmm3, [rip + structural_mask] 
+        pand xmm3, xmm2 
+        pcmpeqb xmm3, xmm0
+        pmovmskb r8, xmm3
+        shl r8, 10h
+        or rdx, r8
+        movdqa xmm3, [rip + whitespace_mask]
+        pand xmm3, xmm2
+        pcmpeqb xmm3, xmm0
+        pmovmskb r8, xmm3
+        shl r8, 10h
+        or rax, r8
+
+        movdqu xmm1, [rdi + 20h]
+        movdqa xmm2, [rip + low_nibble_mask] 
+        pshufb xmm2, xmm1
+        psrlq xmm1, 4 
+        pand xmm1, [rip + no_highest_bit_in_byte] 
+        movdqa xmm3, [rip + high_nibble_mask] 
+        pshufb xmm3, xmm1
+        pand xmm2, xmm3 
+        movdqa xmm3, [rip + structural_mask] 
+        pand xmm3, xmm2 
+        pcmpeqb xmm3, xmm0
+        pmovmskb r8, xmm3
+        shl r8, 20h
+        or rdx, r8
+        movdqa xmm3, [rip + whitespace_mask]
+        pand xmm3, xmm2
+        pcmpeqb xmm3, xmm0
+        pmovmskb r8, xmm3
+        shl r8, 20h
+        or rax, r8
+
+        movdqu xmm1, [rdi + 30h]
+        movdqa xmm2, [rip + low_nibble_mask] 
+        pshufb xmm2, xmm1
+        psrlq xmm1, 4 
+        pand xmm1, [rip + no_highest_bit_in_byte] 
+        movdqa xmm3, [rip + high_nibble_mask] 
+        pshufb xmm3, xmm1
+        pand xmm2, xmm3 
+        movdqa xmm3, [rip + structural_mask] 
+        pand xmm3, xmm2 
+        pcmpeqb xmm3, xmm0
+        pmovmskb r8, xmm3
+        shl r8, 30h
+        or rdx, r8
+        movdqa xmm3, [rip + whitespace_mask]
+        pand xmm3, xmm2
+        pcmpeqb xmm3, xmm0
+        pmovmskb r8, xmm3
+        shl r8, 30h
+        or rax, r8
     ":"={rax}"(whitespace), "={rdx}"(structurals)
     :"{rdi}"(src.as_ptr())
-    :
+    :"xmm0","xmm1","xmm2","xmm3","r8"
     :"intel") };
     (whitespace, structurals)
 }
