@@ -33,18 +33,18 @@ fn process(src: &[u8]) -> (u64, u64) {
         pshufb xmm1, xmm0 # xmm1 and_1
         psrlq xmm0, 4 # xmm0 input >> 4
         pand xmm0, [rip + no_highest_bit_in_byte]  # xmm0 hi_input
-        movdqa xmm2, [rip + high_nibble_mask] # xmm2 hi_msk
+        movdqa xmm2, [rip + high_nibble_mask] # xmm1 hi_msk
         pshufb xmm2, xmm0 # xmm2 and_2
         pand xmm1, xmm2 # xmm1 v_V0
-        pxor xmm2, xmm2 # xmm2 0
-        movdqa xmm0, [rip + structural_mask] # xmm0 struct_msk
-        pand xmm0, xmm1 # xmm0 cmpeq_in1
-        pcmpeqb xmm0, xmm2 # xmm0 struct
-        pmovmskb rdx, xmm0
-        movdqa xmm0, [rip + whitespace_mask] # xmm0 white_msk
-        pand xmm0, xmm1 
-        pcmpeqb xmm1, xmm2
-        pmovmskb rax, xmm0
+        pxor xmm0, xmm0 # xmm0 0
+        movdqa xmm2, [rip + structural_mask] # xmm2 struct_msk
+        pand xmm2, xmm1 # xmm2 cmpeq_in1
+        pcmpeqb xmm2, xmm0 # xmm2 struct
+        pmovmskb rdx, xmm2
+        movdqa xmm2, [rip + whitespace_mask] # xmm2 white_msk
+        pand xmm2, xmm1
+        pcmpeqb xmm2, xmm0
+        pmovmskb rax, xmm2
     ":"={rax}"(whitespace), "={rdx}"(structurals)
     :"{rdi}"(src.as_ptr())
     :
