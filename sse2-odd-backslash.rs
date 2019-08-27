@@ -8,9 +8,6 @@ sixteen_backslashes:
 fn main() {
     let src = br#" important \\\\\ i\portant \\\\f important \\\ff important \\uff"#;
     let ans = process(src); 
-    for i in 0..100_000_000 - 1 {
-        process(src);
-    } 
     println!("{:064b}", ans);
 }
 
