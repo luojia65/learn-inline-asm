@@ -3,11 +3,11 @@ global_asm! { r#"
     .section    .data, ""
     .p2align    4
 low_nibble_mask:
-    .quad 0xF000000000000000
-    .quad 0x00080A04010C0000
+    .quad 0x000000000000000F
+    .quad 0x00000902010C0800
 high_nibble_mask:
-    .quad 0x0800110200040004
-    .quad 0x0000000000000000
+    .quad 0x0100010004120008
+    .quad 0x0000010203000000
 structural_mask:
     .zero 16, 0x07
 whitespace_mask:
@@ -17,7 +17,7 @@ no_highest_bit_in_byte:
 "# }
 
 fn main() {
-    let src = br#" important \\\\\ i\portant \\\\f important \\\ff important \\uff"#;
+    let src = br#"12      ::: \\\\ ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456"#;
     let (w, s) = process(src); 
     println!("{:064b}", w);
     println!("{:064b}", s);
@@ -28,29 +28,23 @@ fn process(src: &[u8]) -> (u64, u64) {
     let whitespace: u64;
     let structurals: u64;
     unsafe { asm!("
-        lea rax, [rip + no_highest_bit_in_byte]
-        movdqa xmm0, [rax] # xmm0 0x7f
-        movdqu xmm1, [rdi] # xmm1 input
-        lea rax, [rip + low_nibble_mask]
-        movdqa xmm2, [rax] # xmm2 lo_msk
-        pshufb xmm2, xmm1 # xmm2 and_1
-        psrlq xmm1, 4 # xmm1 input >> 4
-        pand xmm1, xmm0 # xmm1 hi_input
-        lea rax, [rip + high_nibble_mask]
-        movdqa xmm3, [rax] # xmm3 hi_msk
-        pshufb xmm3, xmm1 # xmm3 and_2
-        pand xmm2, xmm3 # xmm2 v_V0
-        pxor xmm3, xmm3 # xmm3 0
-        lea rax, [rip + structural_mask]
-        movdqa xmm1, [rax] # xmm1 struct_msk
-        pand xmm1, xmm2 # xmm1 cmpeq_in1
-        pcmpeqb xmm1, xmm3 # xmm1 struct
-        pmovmskb rdx, xmm1
-        lea rax, [rip + whitespace_mask]
-        movdqa xmm1, [rax] # xmm1 white_msk
-        pand xmm1, xmm2 
-        pcmpeqb xmm2, xmm3
-        pmovmskb rax, xmm1
+        movdqu xmm0, [rdi] # xmm0 input
+        movdqa xmm1, [rip + low_nibble_mask] # xmm1 lo_msk
+        pshufb xmm1, xmm0 # xmm1 and_1
+        psrlq xmm0, 4 # xmm0 input >> 4
+        pand xmm0, [rip + no_highest_bit_in_byte]  # xmm0 hi_input
+        movdqa xmm2, [rip + high_nibble_mask] # xmm2 hi_msk
+        pshufb xmm2, xmm0 # xmm2 and_2
+        pand xmm1, xmm2 # xmm1 v_V0
+        pxor xmm2, xmm2 # xmm2 0
+        movdqa xmm0, [rip + structural_mask] # xmm0 struct_msk
+        pand xmm0, xmm1 # xmm0 cmpeq_in1
+        pcmpeqb xmm0, xmm2 # xmm0 struct
+        pmovmskb rdx, xmm0
+        movdqa xmm0, [rip + whitespace_mask] # xmm0 white_msk
+        pand xmm0, xmm1 
+        pcmpeqb xmm1, xmm2
+        pmovmskb rax, xmm0
     ":"={rax}"(whitespace), "={rdx}"(structurals)
     :"{rdi}"(src.as_ptr())
     :
