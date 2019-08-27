@@ -3,11 +3,11 @@ global_asm! { r#"
     .section    .data, ""
     .p2align    4
 low_nibble_mask:
-    .quad 0x000000000000000F
-    .quad 0x00000902010C0800
+    .quad 0x0000000000000010
+    .quad 0x00000C01040A0800
 high_nibble_mask:
-    .quad 0x0100010004120008
-    .quad 0x0000010203000000
+    .quad 0x0400040002110008
+    .quad 0x0000000000000000
 structural_mask:
     .zero 16, 0x07
 whitespace_mask:
@@ -21,6 +21,10 @@ fn main() {
     let (w, s) = process(src); 
     println!("{:064b}", w);
     println!("{:064b}", s);
+    for b in src.iter().rev() {
+        print!("{}", String::from_utf8_lossy(&[*b]));
+    } 
+    println!()
 }
 
 #[inline(never)]
