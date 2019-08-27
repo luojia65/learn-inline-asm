@@ -51,11 +51,11 @@ fn process(src: &[u8]) -> (u64, u64) {
         vpand ymm2, ymm2, ymm3 
         vmovdqa ymm3, [rip + structural_mask] 
         vpand ymm3, ymm3, ymm2 
-        vpcmpeqb ymm3, ymm3, ymm0
+        vpcmpgtb ymm3, ymm3, ymm0
         vpmovmskb rdx, ymm3
         vmovdqa ymm3, [rip + whitespace_mask]
         vpand ymm3, ymm3, ymm2
-        vpcmpeqb ymm3, ymm3, ymm0
+        vpcmpgtb ymm3, ymm3, ymm0
         vpmovmskb rax, ymm3
 
         vmovdqu ymm1, [rdi + 20h]
@@ -68,13 +68,13 @@ fn process(src: &[u8]) -> (u64, u64) {
         vpand ymm2, ymm2, ymm3 
         vmovdqa ymm3, [rip + structural_mask] 
         vpand ymm3, ymm3, ymm2 
-        vpcmpeqb ymm3, ymm3, ymm0
+        vpcmpgtb ymm3, ymm3, ymm0
         vpmovmskb r8, ymm3
         shl r8, 20h
         or rdx, r8
         vmovdqa ymm3, [rip + whitespace_mask]
         vpand ymm3, ymm3, ymm2
-        vpcmpeqb ymm3, ymm3, ymm0
+        vpcmpgtb ymm3, ymm3, ymm0
         vpmovmskb r8, ymm3
         shl r8, 20h
         or rax, r8
