@@ -22,8 +22,7 @@ fn main() {
 fn process(src: &[u8]) -> u64 {
     let ans: u64;
     unsafe { asm!("
-        lea rax, [rip + sixteen_backslashes]
-        movdqu xmm1, [rax]
+        movdqu xmm1, [rip + sixteen_backslashes]
         movdqu xmm0, [r8]
         pcmpeqb xmm0, xmm1
         pmovmskb r9, xmm0

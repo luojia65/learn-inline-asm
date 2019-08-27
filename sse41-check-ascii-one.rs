@@ -17,8 +17,7 @@ fn main() {
 fn process(src: &[u8]) -> bool {
     let ans: bool;
     unsafe { asm!("
-        lea rax, [rip + var_high_bit]
-        movdqu xmm2, [rax]
+        movdqu xmm2, [rip + var_high_bit]
         movdqu xmm0, [r8]
         movdqu xmm1, [r8+10h]
         por xmm0, xmm1
