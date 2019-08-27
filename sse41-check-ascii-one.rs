@@ -1,6 +1,6 @@
 #![feature(asm, global_asm)]
 global_asm! { r#"
-    .section	__DATA,__const
+    .section	.data, ""
 var_high_bit:
     .long 0x80808080 
     .long 0x80808080

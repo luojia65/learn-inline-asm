@@ -1,6 +1,6 @@
 #![feature(asm, global_asm)]
 global_asm! { r#"
-    .section	__DATA,__const
+    .section	.data, ""
 letter_lower_i_mask:
     .ascii "iiiiiiiiiiiiiiii"
 "# }

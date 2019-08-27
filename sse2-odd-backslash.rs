@@ -1,6 +1,6 @@
 #![feature(asm, global_asm)]
 global_asm! { r#"
-    .section	__DATA,__const
+    .section	.data, ""
 sixteen_backslashes:
     .long 0x5C5C5C5C
     .long 0x5C5C5C5C
