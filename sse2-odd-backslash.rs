@@ -2,15 +2,9 @@
 global_asm! { r#"
     .section	.data, ""
 sixteen_backslashes:
-    .long 0x5C5C5C5C
-    .long 0x5C5C5C5C
-    .long 0x5C5C5C5C
-    .long 0x5C5C5C5C
+    .zero 16, 0x5C
 even_bits_64:
-    .long 0x55555555
-    .long 0x55555555
-    .long 0x55555555
-    .long 0x55555555
+    .zero 16, 0x55
 "# }
 
 fn main() {

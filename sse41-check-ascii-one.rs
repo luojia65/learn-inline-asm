@@ -2,10 +2,7 @@
 global_asm! { r#"
     .section	.data, ""
 var_high_bit:
-    .long 0x80808080 
-    .long 0x80808080
-    .long 0x80808080 
-    .long 0x80808080
+    .zero 16, 0x80
 "# }
 
 fn main() {
