@@ -16,7 +16,7 @@ sixteen_unicode_max:
 "# }
 
 fn main() {
-    let src = b"\xf4\xd0\xe0\xf000  ::: 1234 ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456";
+    let src = b"\xf4\x80\x80\x8000  ::: 1234 ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456";
     let _ = process(src); 
 }
 
@@ -43,21 +43,25 @@ process_loop:
         movdqa xmm5, xmm4
         palignr xmm5, xmm0, 15 
         psubusb xmm5, [rip + sixteen_u8_ones] # xmm5: right1
-        paddb xmm5, xmm4; # xmm5: sum
-        movdqa xmm6, xmm5; # xmm6: sum
+        paddb xmm5, xmm4 # xmm5: sum
+        movdqa xmm6, xmm5 # xmm6: sum
         palignr xmm6, xmm0, 14 
         psubusb xmm6, [rip + sixteen_u8_twos] # xmm6: right2
-        paddb xmm5, xmm6; # xmm5: carried_continuations 
+        paddb xmm5, xmm6 # xmm5: carried_continuations 
     # check continuations
-
-
+        pxor xmm6, xmm6 # xmm6: 0
+        pcmpgtb xmm5, xmm4 # xmm5: eq_1
+        pcmpgtb xmm4, xmm6 # xmm4: eq_2
+        pcmpeqb xmm4, xmm5 # xmm4: overunder
+        por xmm1, xmm4 
+    
 
         // add rcx, 64
         // cmp rcx, rsi
         // jb process_loop
 
-        movq rax, xmm5
-        pextrq rdx, xmm5, 1
+        movq rax, xmm4
+        pextrq rdx, xmm4, 1
     ":"={rax}"(outh),"={rdx}"(outl)
     :"{rdi}"(src.as_ptr()), "{rsi}"(src.len())
     :"xmm0","rcx" // todo
