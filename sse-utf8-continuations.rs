@@ -43,12 +43,12 @@ process_loop:
         movdqa xmm5, xmm4
         palignr xmm5, xmm0, 15 
         psubusb xmm5, [rip + sixteen_u8_ones] # xmm5: right1
-        paddb xmm4, xmm5; # xmm4: sum
-        movdqa xmm5, xmm4; # xmm5: sum
-        palignr xmm4, xmm0, 14 
-        psubusb xmm4, [rip + sixteen_u8_twos] # xmm4: right2
-        paddb xmm4, xmm5; # xmm4: carried_continuations 
-
+        paddb xmm5, xmm4; # xmm5: sum
+        movdqa xmm6, xmm5; # xmm6: sum
+        palignr xmm6, xmm0, 14 
+        psubusb xmm6, [rip + sixteen_u8_twos] # xmm6: right2
+        paddb xmm5, xmm6; # xmm5: carried_continuations 
+    # check continuations
 
 
 
@@ -56,8 +56,8 @@ process_loop:
         // cmp rcx, rsi
         // jb process_loop
 
-        movq rax, xmm1
-        pextrq rdx, xmm1, 1
+        movq rax, xmm5
+        pextrq rdx, xmm5, 1
     ":"={rax}"(outh),"={rdx}"(outl)
     :"{rdi}"(src.as_ptr()), "{rsi}"(src.len())
     :"xmm0","rcx" // todo
