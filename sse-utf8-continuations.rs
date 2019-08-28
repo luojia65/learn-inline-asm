@@ -11,10 +11,12 @@ sixteen_u8_ones:
     .zero 16, 0x01
 sixteen_u8_twos:
     .zero 16, 0x02
+sixteen_unicode_max:
+    .zero 16, 0xF4
 "# }
 
 fn main() {
-    let src = b"\xc0\xd0\xe0\xf000  ::: 1234 ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456";
+    let src = b"\xf4\xd0\xe0\xf000  ::: 1234 ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456";
     let _ = process(src); 
 }
 
@@ -22,18 +24,43 @@ fn main() {
 fn process(src: &[u8]) -> () {
     let outh: u64; let outl: u64;
     unsafe { asm!("
-        pxor xmm0, xmm0 // xmm0: prev
-        // movdqa xmm0, [rip + continuation_length]
-        // movdqu xmm1, [rdi]
-        // psrlq xmm1, 4
-        // pand xmm1, [rip + lo_nibble_filter]
-        // pshufb xmm0, xmm1
-        // palignr xmm0, xmm1, 15
-        // movq rax, xmm0
-        // pextrq rdx, xmm0, 1
+        mov rcx, 0
+        pxor xmm0, xmm0 # xmm0: prev_carries
+        pxor xmm1, xmm1 # xmm1: has_error 
+process_loop:
+        movdqu xmm2, [rdi + rcx] # xmm2: current_bytes
+        movdqa xmm3, xmm2
+    # check unicode max 0xf4 into has_error
+        psubusb xmm3, [rip + sixteen_unicode_max]
+        por xmm1, xmm3
+    # get continuation lengths
+        movdqa xmm3, xmm2
+        psrlq xmm3, 4
+        pand xmm3, [rip + lo_nibble_filter] # xmm3: hi nibble now 
+        movdqa xmm4, [rip + continuation_length]
+        pshufb xmm4, xmm3 # xmm4: initial lengths
+    # get carried continuations
+        movdqa xmm5, xmm4
+        palignr xmm5, xmm0, 15 
+        psubusb xmm5, [rip + sixteen_u8_ones] # xmm5: right1
+        paddb xmm4, xmm5; # xmm4: sum
+        movdqa xmm5, xmm4; # xmm5: sum
+        palignr xmm4, xmm0, 14 
+        psubusb xmm4, [rip + sixteen_u8_twos] # xmm4: right2
+        paddb xmm4, xmm5; # xmm4: carried_continuations 
+
+
+
+
+        // add rcx, 64
+        // cmp rcx, rsi
+        // jb process_loop
+
+        movq rax, xmm1
+        pextrq rdx, xmm1, 1
     ":"={rax}"(outh),"={rdx}"(outl)
-    :"{rdi}"(src.as_ptr())
-    :"xmm0"
+    :"{rdi}"(src.as_ptr()), "{rsi}"(src.len())
+    :"xmm0","rcx" // todo
     :"intel") };
     println!("{:016X}{:016X}", outl, outh);
 }
