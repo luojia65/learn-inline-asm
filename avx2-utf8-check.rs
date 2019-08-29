@@ -21,10 +21,20 @@ all_9f_bytes:
     .zero 32, 0x9F
 all_8f_bytes:
     .zero 32, 0x8F
+initial_min_mask:
+    .quad 0xFFFFFFFFFFFFFFFF
+    .quad 0xF1E1FFC2FFFFFFFF
+    .quad 0xFFFFFFFFFFFFFFFF
+    .quad 0xF1E1FFC2FFFFFFFF
+second_min_mask:
+    .quad 0xFFFFFFFFFFFFFFFF
+    .quad 0x90A07F7FFFFFFFFF
+    .quad 0xFFFFFFFFFFFFFFFF
+    .quad 0x90A07F7FFFFFFFFF
 "# }
 
 fn main() {
-    let src = b"\xf4\x80\x80\x8000  ::: 1234 ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456";
+    let src = b"\xe0\xa0\x80\x7f00  ::: 1234 ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456";
     let _ = process(src); 
 }
 
@@ -34,7 +44,7 @@ fn process(src: &[u8]) -> () {
     unsafe { asm!("
     # ymm0: has_error
     # ymm1: prev_raw, off1_current_bytes
-    # ymm2: prev_high_nibbles
+    # ymm2: prev_high_nibbles, off1_high_nibble
     # ymm3: prev_carried_continuations, cur_carried_continuations
     # ymm4: cur_raw
     # ymm5: cur_high_nibbles
@@ -79,8 +89,16 @@ process_loop:
         vpcmpgtb ymm8, ymm4, [rip + all_8f_bytes]
         vpand ymm7, ymm7, ymm8
         vpor ymm0, ymm0, ymm7
-    # check overlength
-        // todo
+    # check overlong
+        vpalignr ymm2, ymm5, ymm2, 15
+        vmovdqa ymm7, [rip + initial_min_mask]
+        vpshufb ymm7, ymm7, ymm2
+        vpcmpgtb ymm8, ymm7, ymm1
+        vmovdqa ymm7, [rip + second_min_mask]
+        vpshufb ymm7, ymm7, ymm2
+        vpcmpgtb ymm7, ymm7, ymm4
+        vpand ymm7, ymm7, ymm8
+        vpor ymm0, ymm0, ymm7
     # move current to prev
         vmovdqa ymm1, ymm4
         vmovdqa ymm2, ymm5
