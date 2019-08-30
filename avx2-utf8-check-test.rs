@@ -36,34 +36,34 @@ second_min_mask:
 fn main() {
     let mut src = Vec::new();
     // U+0000..U+007F     00..7F
-    // for i in 0..=0x7F {
-    //     src.push(i)
-    // }
+    for i in 0..=0x7F {
+        src.push(i)
+    }
     // U+0080..U+07FF     C2..DF   80..BF
-    // for i in 0xC2..=0xDF {
-    //     for j in 0x80..=0xBF {
-    //         src.push(i);
-    //         src.push(j);
-    //     }
-    // }
+    for i in 0xC2..=0xDF {
+        for j in 0x80..=0xBF {
+            src.push(i);
+            src.push(j);
+        }
+    }
     // U+0800..U+0FFF     E0       A0..BF   80..BF
-    // for i in 0xA0..=0xBF {
-    //     for j in 0x80..=0xBF {
-    //         src.push(0xE0);
-    //         src.push(i);
-    //         src.push(j);
-    //     }
-    // }
+    for i in 0xA0..=0xBF {
+        for j in 0x80..=0xBF {
+            src.push(0xE0);
+            src.push(i);
+            src.push(j);
+        }
+    }
     // U+1000..U+CFFF     E1..EC   80..BF   80..BF
-    // for i in 0xE1..=0xEC {
-    //     for j in 0x80..=0xBF {
-    //         for k in 0x80..=0xBF {
-    //             src.push(i);
-    //             src.push(j);
-    //             src.push(k);
-    //         }
-    //     }
-    // }
+    for i in 0xE1..=0xEC {
+        for j in 0x80..=0xBF {
+            for k in 0x80..=0xBF {
+                src.push(i);
+                src.push(j);
+                src.push(k);
+            }
+        }
+    }
     // U+D000..U+D7FF     ED       80..9F   80..BF
     for i in 0x80..=0x9F {
         for j in 0x80..=0xBF {
@@ -73,59 +73,59 @@ fn main() {
         }
     }
     // U+E000..U+FFFF     EE..EF   80..BF   80..BF
-    // for i in 0xEE..=0xEF {
-    //     for j in 0x80..=0xBF {
-    //         for k in 0x80..=0xBF {
-    //             src.push(i);
-    //             src.push(j);
-    //             src.push(k);
-    //         }
-    //     }
-    // }
+    for i in 0xEE..=0xEF {
+        for j in 0x80..=0xBF {
+            for k in 0x80..=0xBF {
+                src.push(i);
+                src.push(j);
+                src.push(k);
+            }
+        }
+    }
     // U+10000..U+3FFFF   F0       90..BF   80..BF   80..BF
-    // for i in 0x90..=0xBF {
-    //     for j in 0x80..=0xBF {
-    //         for k in 0x80..=0xBF {
-    //             src.push(0xF0);
-    //             src.push(i);
-    //             src.push(j);
-    //             src.push(k);
-    //         }
-    //     }
-    // }
+    for i in 0x90..=0xBF {
+        for j in 0x80..=0xBF {
+            for k in 0x80..=0xBF {
+                src.push(0xF0);
+                src.push(i);
+                src.push(j);
+                src.push(k);
+            }
+        }
+    }
     // U+40000..U+FFFFF   F1..F3   80..BF   80..BF   80..BF
-    // for i in 0xF1..=0xF3 {
-    //     for j in 0x80..=0xBF {
-    //         for k in 0x80..=0xBF {
-    //             for l in 0x80..=0xBF {
-    //                 src.push(i);
-    //                 src.push(j);
-    //                 src.push(k);
-    //                 src.push(l);
-    //             }
-    //         }
-    //     }
-    // }
+    for i in 0xF1..=0xF3 {
+        for j in 0x80..=0xBF {
+            for k in 0x80..=0xBF {
+                for l in 0x80..=0xBF {
+                    src.push(i);
+                    src.push(j);
+                    src.push(k);
+                    src.push(l);
+                }
+            }
+        }
+    }
     // U+100000..U+10FFFF F4       80..8F   80..BF   80..BF
-    // for i in 0x80..=0x8F {
-    //     for j in 0x80..=0xBF {
-    //         for k in 0x80..=0xBF {
-    //             src.push(0xF4);
-    //             src.push(i);
-    //             src.push(j);
-    //             src.push(k);
-    //         }
-    //     }
-    // }
+    for i in 0x80..=0x8F {
+        for j in 0x80..=0xBF {
+            for k in 0x80..=0xBF {
+                src.push(0xF4);
+                src.push(i);
+                src.push(j);
+                src.push(k);
+            }
+        }
+    }
     println!("Length: {}", src.len());
-    let _ = process(&src); 
-    // println!("Is string a valid UTF-8? {}", out);
+    let out = process(&src); 
+    println!("Is string a valid UTF-8? {}", out);
 }
 
 
 #[inline(never)]
-fn process(src: &[u8]) -> () {
-    let out = [0u64; 4];
+fn process(src: &[u8]) -> bool {
+    let out: bool;
     unsafe { asm!("
     # ymm0: has_error
     # ymm1: prev_raw, off1_current_bytes
@@ -142,72 +142,70 @@ fn process(src: &[u8]) -> () {
 process_loop:
     # load cur_raw 
         vlddqu ymm4, [rdi + rcx]
-    // # check unicode max 0xf4 into has_error
-    //     vpsubusb ymm5, ymm4, [rip + all_f4_bytes]
-    //     vpor ymm0, ymm5, ymm0
-    // # get current continuation lengths
-    //     vpsrlq ymm5, ymm4, 4
-    //     vpand ymm5, ymm5, [rip + lo_nibble_filter]
-    //     vmovdqa ymm6, [rip + continuation_length]
-    //     vpshufb ymm6, ymm6, ymm5
-    // # get current carried continuations
-    //     vperm2i128 ymm8, ymm3, ymm6, 0x21
-    //     vpalignr ymm8, ymm6, ymm8, 15
-    //     vpsubusb ymm8, ymm8, [rip + all_u8_ones]
-    //     vpaddb ymm8, ymm8, ymm6
-    //     vperm2i128 ymm7, ymm3, ymm8, 0x21
-    //     vpalignr ymm7, ymm8, ymm7, 14
-    //     vpsubusb ymm7, ymm7, [rip + all_u8_twos]
-    //     vpaddb ymm3, ymm8, ymm7
-    // # check continuations
-    //     vpcmpgtb ymm8, ymm3, ymm6
-    //     vpcmpgtb ymm7, ymm6, ymm9 
-    //     vpcmpeqb ymm8, ymm8, ymm7 
-    //     vpor ymm0, ymm0, ymm8
-    // # get offset current bytes
-    //     vperm2i128 ymm1, ymm1, ymm4, 0x21
-    //     vpalignr ymm1, ymm4, ymm1, 15
-    // # check first continuation max
-    //     vpcmpeqb ymm7, ymm1, [rip + all_ed_bytes]
-    //     vpcmpgtb ymm8, ymm4, [rip + all_9f_bytes]
-    //     vpand ymm7, ymm7, ymm8
-    //     vpor ymm0, ymm0, ymm7
-    //     vpcmpeqb ymm7, ymm1, [rip + all_f4_bytes]
-    //     vpcmpgtb ymm8, ymm4, [rip + all_8f_bytes]
-    //     vpand ymm7, ymm7, ymm8
-    //     vpor ymm0, ymm0, ymm7
-    // # check overlong
-    //     vperm2i128 ymm2, ymm2, ymm5, 0x21
-    //     vpalignr ymm2, ymm5, ymm2, 15
-    //     vmovdqa ymm7, [rip + initial_min_mask]
-    //     vpshufb ymm7, ymm7, ymm2
-    //     vpcmpgtb ymm8, ymm7, ymm1
-    //     vmovdqa ymm7, [rip + second_min_mask]
-    //     vpshufb ymm7, ymm7, ymm2
-    //     vpcmpgtb ymm7, ymm7, ymm4
-    //     vpand ymm7, ymm7, ymm8
-    //     vpor ymm0, ymm0, ymm7
-
-
-        vptest ymm0, ymm0
-        jnz result_has_error
-
-
+    # check unicode max 0xf4 into has_error
+        vpsubusb ymm5, ymm4, [rip + all_f4_bytes]
+        vpor ymm0, ymm5, ymm0
+    # get current continuation lengths
+        vpsrlq ymm5, ymm4, 4
+        vpand ymm5, ymm5, [rip + lo_nibble_filter]
+        vmovdqa ymm6, [rip + continuation_length]
+        vpshufb ymm6, ymm6, ymm5
+    # get current carried continuations
+        vperm2i128 ymm8, ymm3, ymm6, 0x21
+        vpalignr ymm8, ymm6, ymm8, 15
+        vpsubusb ymm8, ymm8, [rip + all_u8_ones]
+        vpaddb ymm8, ymm8, ymm6
+        vperm2i128 ymm7, ymm3, ymm8, 0x21
+        vpalignr ymm7, ymm8, ymm7, 14
+        vpsubusb ymm7, ymm7, [rip + all_u8_twos]
+        vpaddb ymm3, ymm8, ymm7
+    # check continuations
+        vpcmpgtb ymm8, ymm3, ymm6
+        vpcmpgtb ymm7, ymm6, ymm9 
+        vpcmpeqb ymm8, ymm8, ymm7 
+        vpor ymm0, ymm0, ymm8
+    # get offset current bytes
+        vperm2i128 ymm1, ymm1, ymm4, 0x21
+        vpalignr ymm1, ymm4, ymm1, 15
+    # check first continuation max
+        vpcmpeqb ymm7, ymm1, [rip + all_ed_bytes]
+        vpcmpgtb ymm8, ymm4, [rip + all_9f_bytes]
+        vpand ymm7, ymm7, ymm8
+        vpor ymm0, ymm0, ymm7
+        vpcmpeqb ymm7, ymm1, [rip + all_f4_bytes]
+        vpcmpgtb ymm8, ymm4, [rip + all_8f_bytes]
+        vpand ymm7, ymm7, ymm8
+        vpor ymm0, ymm0, ymm7
+    # check overlong
+        vperm2i128 ymm2, ymm2, ymm5, 0x21
+        vpalignr ymm2, ymm5, ymm2, 15
+        vmovdqa ymm7, [rip + initial_min_mask]
+        vpshufb ymm7, ymm7, ymm2
+        vpcmpgtb ymm8, ymm7, ymm1
+        vmovdqa ymm7, [rip + second_min_mask]
+        vpshufb ymm7, ymm7, ymm2
+        vpcmpgtb ymm7, ymm7, ymm4
+        vpand ymm7, ymm7, ymm8
+        vpor ymm0, ymm0, ymm7
     # move current to prev
         vmovdqa ymm1, ymm4
         vmovdqa ymm2, ymm5
 
-        add rcx, 64
+        add rcx, 32
         cmp rcx, rsi
         jb process_loop
-    
-    result_has_error:
-        vmovdqu [rax], ymm4
-    ":
-    :"{rdi}"(src.as_ptr()), "{rsi}"(src.len()), "{rax}"(out.as_ptr())
+        vptest ymm0, ymm0
+        jz result_no_error
+        mov rax, 0
+        jmp result_has_error
+result_no_error:
+        mov rax, 1
+result_has_error:
+    ":"={rax}"(out)
+    :"{rdi}"(src.as_ptr()), "{rsi}"(src.len())
     :"ymm0","ymm1","ymm2","ymm3","ymm4","ymm5","ymm6","ymm7","ymm8","ymm9","rcx"
     :"intel") };
-    println!("{:016X}{:016X}{:016X}{:016X}", out[3], out[2], out[1], out[0]);
+    out
 }
 
 // #[inline(never)]
@@ -256,7 +254,7 @@ process_loop:
 //         vpor ymm0, ymm0, ymm7
 //         vmovdqa ymm1, ymm4
 //         vmovdqa ymm2, ymm5
-//         add rcx, 64
+//         add rcx, 32
 //         cmp rcx, rsi
 //         jb process_loop
 //         vptest ymm0, ymm0

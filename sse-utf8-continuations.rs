@@ -28,7 +28,7 @@ fn process(src: &[u8]) -> () {
         pxor xmm1, xmm1 # xmm1: has_error 
         pxor xmm2, xmm2 # xmm2: prev_high_nibbles
         mov rcx, 0
-// process_loop:
+process_loop:
         movdqu xmm3, [rdi + rcx] # xmm3: current_bytes
         movdqa xmm4, xmm3
     # check unicode max 0xf4 into has_error
@@ -61,9 +61,9 @@ fn process(src: &[u8]) -> () {
         // ???
     # move current high nibbles to prev high nibbles
         movdqa xmm2, xmm4
-        // add rcx, 64
-        // cmp rcx, rsi
-        // jb process_loop
+        add rcx, 16
+        cmp rcx, rsi
+        jb process_loop
 
         movq rax, xmm1
         pextrq rdx, xmm1, 1

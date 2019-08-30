@@ -105,7 +105,7 @@ process_loop:
         vmovdqa ymm1, ymm4
         vmovdqa ymm2, ymm5
 
-        add rcx, 64
+        add rcx, 32
         cmp rcx, rsi
         jb process_loop
         
