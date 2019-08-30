@@ -22,19 +22,19 @@ all_9f_bytes:
 all_8f_bytes:
     .zero 32, 0x8F
 initial_min_mask:
-    .quad 0xFFFFFFFFFFFFFFFF
-    .quad 0xF1E1FFC2FFFFFFFF
-    .quad 0xFFFFFFFFFFFFFFFF
-    .quad 0xF1E1FFC2FFFFFFFF
+    .quad 0x8080808080808080
+    .quad 0xF1E180C280808080
+    .quad 0x8080808080808080
+    .quad 0xF1E180C280808080
 second_min_mask:
-    .quad 0xFFFFFFFFFFFFFFFF
-    .quad 0x90A07F7FFFFFFFFF
-    .quad 0xFFFFFFFFFFFFFFFF
-    .quad 0x90A07F7FFFFFFFFF
+    .quad 0x8080808080808080
+    .quad 0x90A07F7F80808080
+    .quad 0x8080808080808080
+    .quad 0x90A07F7F80808080
 "# }
 
 fn main() {
-    let src = b"\xe0\xa0\x80\x7f00  ::: 1234 ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456";
+    let src = b"\xf0\x90\x80\xbf00  ::: 1234 ,,,,, {{{{{{ {}{ 123123123 }{} }}}}}} 456456456";
     let _ = process(src); 
 }
 
@@ -55,7 +55,6 @@ fn process(src: &[u8]) -> () {
         vzeroall
         mov rcx, 0
 process_loop:
-
     # load cur_raw 
         vlddqu ymm4, [rdi + rcx]
     # check unicode max 0xf4 into has_error
