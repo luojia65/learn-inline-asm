@@ -67,9 +67,12 @@ process_loop:
         vpshufb ymm6, ymm6, ymm5
     # get current carried continuations
         vpalignr ymm8, ymm6, ymm3, 15
+        vperm2i128 ymm8, ymm3, ymm6, 0x21
+        vpalignr ymm8, ymm6, ymm8, 15
         vpsubusb ymm8, ymm8, [rip + all_u8_ones]
         vpaddb ymm8, ymm8, ymm6
-        vpalignr ymm7, ymm8, ymm3, 14
+        vperm2i128 ymm7, ymm3, ymm8, 0x21
+        vpalignr ymm7, ymm8, ymm7, 14
         vpsubusb ymm7, ymm7, [rip + all_u8_twos]
         vpaddb ymm3, ymm8, ymm7
     # check continuations
