@@ -109,7 +109,7 @@ process_loop:
         vmovdqu [rax], ymm0
     ":
     :"{rdi}"(src.as_ptr()), "{rsi}"(src.len()), "{rax}"(out.as_ptr())
-    :"ymm0","rcx" // todo
+    :"ymm0","ymm1","ymm2","ymm3","ymm4","ymm5","ymm6","ymm7","ymm8","ymm9","rcx"
     :"intel") };
     println!("{:016X}{:016X}{:016X}{:016X}", out[3], out[2], out[1], out[0]);
 }
