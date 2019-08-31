@@ -36,20 +36,20 @@ second_min_mask:
 // This program does not check for illegal 0xC0 and 0xC1 chars
 fn main() {
     let mut src: Vec<u8> = Vec::new();
-    for _ in 1..=16*1024*1024 {
+    for _ in 1..=1024*1024*1024 {
         src.push(0x01);
     }
     println!("Size: {} bytes", src.len());
     use std::time::Instant;
     let a = Instant::now();
-    let _ = process(&src); 
+    let c = process(&src); 
     let b = Instant::now();
     let dur = b - a;
+    println!("Result: {}", c);
     println!("Time: {} ns", dur.as_nanos());
     let speed = (src.len() as f64)/(dur.as_nanos() as f64 / 1_000_000_000.0)/(1024.0*1024.0*1024.0);
     println!("Speed: {:.06} GiB/s", speed);
 }
-
 
 #[inline(never)]
 fn process(src: &[u8]) -> bool {
