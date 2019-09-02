@@ -8,8 +8,8 @@ x_indexes:
     .quad 0x0000000C00000008
     .quad 0x0000001400000010
     .quad 0x0000001C00000018
-.LCPI1_0:
-    .long 0xBF800000
+high_bit_one:
+    .long 0x80000000
 "# }
 
 struct Point(f32, f32);
@@ -31,9 +31,9 @@ fn process(a: &[Point], b: &[Point]) {
     let out = [0f32; 8];
     unsafe { asm!("
         vmovdqa ymm0, [rip + x_indexes]
-        vbroadcastss ymm1, [rip + .LCPI1_0]
+        vbroadcastss ymm1, [rip + high_bit_one]
         vgatherdps ymm2, [rdi + 2 * ymm0], ymm1
-        vbroadcastss ymm1, [rip + .LCPI1_0]
+        vbroadcastss ymm1, [rip + high_bit_one]
         vgatherdps ymm3, [rsi + 2 * ymm0], ymm1
         vaddps ymm2, ymm2, ymm3
         vmovdqu [rax], ymm2
