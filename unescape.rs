@@ -35,4 +35,6 @@ fn main() {
     let odd_backslashes = odd_bit_backslashes & odd_includes;
     let result = even_backslashes | odd_backslashes;
     println!("{:064b}", result);
+    // We may save the result using compress or compress-store method
+    // provided by x86_64's AVX-512 instruction set.
 }
