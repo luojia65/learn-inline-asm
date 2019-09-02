@@ -37,4 +37,11 @@ fn main() {
     println!("{:064b}", result);
     // We may save the result using compress or compress-store method
     // provided by x86_64's AVX-512 instruction set.
+    // If the result should be bitwise negated before masking, use and-not
+    // instruction instead of and when calculating `even_backslashes` and 
+    // `odd_backslashes` variants.
+    let tail = u64::wrapping_add(head, backslashes);
+    println!("{:064b}", tail);
+    // Use AVX-512 byte shuffle instruction with `tail` variant as a mask.
+    // This filters and replaces `\n` etc into unescaped value.
 }
