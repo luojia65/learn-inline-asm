@@ -17,3 +17,8 @@ pub fn main() -> ! {
     }
     loop {}
 }
+
+// #[export_name = "_start"]
+// pub fn _start() -> ! { 
+//     main() 
+// }
