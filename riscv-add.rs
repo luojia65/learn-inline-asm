@@ -1,3 +1,5 @@
+#![feature(asm)]
+
 #![no_std]
 #![no_main]
 
@@ -9,18 +11,18 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 #[export_name = "main"]
-fn main() -> ! {
-    // code here
-    loop {}
+fn main() {
+    let _value = riscv_add(100002, 200001);
 }
 
 #[no_mangle]
 #[inline(never)]
-fn riscv_process(a: u64, b: u64) -> u64 {
+fn riscv_add(a: u64, b: u64) -> u64 {
     let ret: u64;
     unsafe { asm!("
-    // code here
-        "
+        add $0, $1, $2
+        ":"=r"(ret)
+        :"r"(a), "r"(b)
     ) };
     ret
 }
